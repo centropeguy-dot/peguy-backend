@@ -1,0 +1,18 @@
+{
+  "version": 2
+}
+```
+
+4. **"Commit new file"**
+
+---
+
+## ✅ Dopo Aver Caricato Tutti e 3 i File
+
+Dovresti vedere nella pagina principale del repository:
+```
+peguy-backend/
+├── api/
+│   └── chat.js
+├── package.json
+└── vercel.json
