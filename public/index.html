@@ -1,4 +1,3 @@
-html
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -167,23 +166,3 @@ html
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message })
                 });
-
-                const data = await response.json();
-                removeLoadingIndicator();
-
-                if (data.reply) {
-                    addMessage(data.reply, false);
-                } else {
-                    addMessage('Errore: ' + (data.error || 'Risposta non valida'), false);
-                }
-            } catch (error) {
-                removeLoadingIndicator();
-                addMessage('Errore di connessione: ' + error.message, false);
-            } finally {
-                sendBtn.disabled = false;
-                userInput.focus();
-            }
-        }
-    </script>
-</body>
-</html>
