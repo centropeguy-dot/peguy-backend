@@ -6,7 +6,6 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
-  // Abilita CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -26,9 +25,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    // Per ora risposta di test
     return res.status(200).json({ 
-      reply: `Ho ricevuto la tua domanda: "${message}". Il sistema è funzionante! (Embedding search in arrivo...)` 
+      reply: `Ho ricevuto la tua domanda: "${message}". Il sistema è funzionante!` 
     });
 
   } catch (error) {
