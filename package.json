@@ -1,5 +1,5 @@
 {
-  "name": "peguy-chatbot-backend",
+  "name": "peguy-chatbot-backend" ,
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
