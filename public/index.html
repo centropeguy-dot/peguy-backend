@@ -118,9 +118,8 @@
                 type="text" 
                 id="userInput" 
                 placeholder="Scrivi la tua domanda..."
-                onkeypress="if(event.key==='Enter') sendMessage()"
             >
-            <button onclick="sendMessage()" id="sendBtn">Invia</button>
+            <button id="sendBtn">Invia</button>
         </div>
     </div>
 
@@ -131,7 +130,7 @@
 
         function addMessage(text, isUser) {
             const div = document.createElement('div');
-            div.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            div.className = 'message ' + (isUser ? 'user-message' : 'bot-message');
             div.textContent = text;
             chatArea.appendChild(div);
             chatArea.scrollTop = chatArea.scrollHeight;
@@ -164,5 +163,33 @@
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message })
+                    body: JSON.stringify({ message: message })
                 });
+
+                const data = await response.json();
+                removeLoadingIndicator();
+
+                if (data.reply) {
+                    addMessage(data.reply, false);
+                } else {
+                    addMessage('Errore: ' + (data.error || 'Risposta non valida'), false);
+                }
+            } catch (error) {
+                removeLoadingIndicator();
+                addMessage('Errore di connessione: ' + error.message, false);
+            } finally {
+                sendBtn.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        // Event listeners
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
