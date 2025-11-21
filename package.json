@@ -1,8 +1,7 @@
 {
-  "name": "peguy-chatbot-backend" ,
-  "version": "1.0.0",
   "type": "module",
   "dependencies": {
+    "express": "^4.18.2",
     "@supabase/supabase-js": "^2.39.0"
   }
 }
