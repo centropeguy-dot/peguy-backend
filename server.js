@@ -51,7 +51,7 @@ if (chunks.length === 0) {
 
     console.log("Chunks trovati:", chunks?.length || 0);
 
-    if (!chunks || chunks.length === 0) {
+   if (!chunks || chunks.length === 0) {
       return res.json({ answer: "Nessun documento trovato." });
     }
 
