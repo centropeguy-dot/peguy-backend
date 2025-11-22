@@ -15,18 +15,39 @@ app.post("/api/chat", async (req, res) => {
   try {
     const { question } = req.body;
 
-    const { data: chunks, error } = await supabase
-      .from("peguy_chunks")
-      .select(
-        `
-        chunk_text,
-        document_id,
-        peguy_documents!inner (
-          title
-        )
-      `,
-      )
-      .limit(50);
+    // Cerca chunks rilevanti per parole chiave
+const keywords = question.toLowerCase().split(' ').filter(w => w.length > 3);
+let chunks = [];
+
+for (const keyword of keywords.slice(0, 3)) { // Prendi max 3 parole chiave
+  const { data } = await supabase
+    .from("peguy_chunks")
+    .select(`
+      chunk_text,
+      document_id,
+      peguy_documents!inner (title)
+    `)
+    .ilike('chunk_text', `%${keyword}%`)
+    .limit(30);
+  
+  if (data) chunks.push(...data);
+}
+
+// Rimuovi duplicati
+chunks = [...new Map(chunks.map(c => [c.chunk_text, c])).values()];
+
+// Se non trova nulla, prendi i primi 100
+if (chunks.length === 0) {
+  const { data, error } = await supabase
+    .from("peguy_chunks")
+    .select(`
+      chunk_text,
+      document_id,
+      peguy_documents!inner (title)
+    `)
+    .limit(100);
+  chunks = data || [];
+}
 
     console.log("Chunks trovati:", chunks?.length || 0);
 
