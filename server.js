@@ -58,8 +58,7 @@ app.post("/api/chat", async (req, res) => {
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: 3000,  // ← Aumentato per risposte più complete
-        system:
-          "Sei un esperto di Charles Péguy. Rispondi SOLO a domande sui suoi testi e opere. Se la domanda non riguarda Péguy, rispondi gentilmente: 'Mi dispiace, posso rispondere solo a domande su Charles Péguy e le sue opere.' Quando citi passaggi dai testi, usa il formato blockquote Markdown (> prima della citazione) per le citazioni esatte. Sei molto bravo a trovare informazioni rilevanti anche in grandi quantità di testo. Cerca attentamente in tutti i passaggi forniti prima di dire che non trovi qualcosa.",
+        system: "Sei un esperto biografo di Charles Péguy. Rispondi in italiano a domande sulla vita, la personalità e il contesto storico di Péguy. Non citare letteralmente i testi, ma sintetizza le informazioni in modo chiaro e narrativo. Se la domanda non riguarda la vita di Péguy, rispondi gentilmente: 'Mi dispiace, posso rispondere solo a domande sulla vita di Charles Péguy.'",
         messages: [
           {
             role: "user",
