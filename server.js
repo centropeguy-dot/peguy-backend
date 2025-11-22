@@ -8,36 +8,8 @@ app.use(express.static("."));
 const CLAUDE_KEY = process.env.CLAUDE_KEY; 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
-const VOYAGE_API_KEY = process.env.VOYAGE_API_KEY;  // ← Voyage AI
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// Genera embedding con Voyage AI
-async function generateEmbedding(text) {
-  const response = await fetch("https://api.voyageai.com/v1/embeddings", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${VOYAGE_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      input: text,
-      model: "voyage-multilingual-2",  // Modello multilingua per FR/IT
-    }),
-  });
-
-  const data = await response.json();
-  
-  if (data.error || !data.data) {
-    console.error("❌ Errore Voyage:", data);
-    throw new Error(data.error?.message || "Errore embedding");
-  }
-  
-  const embedding = data.data[0].embedding;
-  
-  // Voyage restituisce 1024 dimensioni, padda a 1536
-  return [...embedding, ...Array(1536 - embedding.length).fill(0)];
-}
 
 app.post("/api/chat", async (req, res) => {
   try {
@@ -45,40 +17,36 @@ app.post("/api/chat", async (req, res) => {
 
     console.log("🔍 Domanda:", question);
 
-    // Genera embedding della domanda
-    console.log("⚙️ Generazione embedding con Voyage...");
-    const questionEmbedding = await generateEmbedding(question);
+    // Prendi TUTTI i chunks (fino a 500)
+    // Con poche conversazioni, il costo è accettabile
+    const { data: chunks, error } = await supabase
+      .from("peguy_chunks")
+      .select(
+        `
+        chunk_text,
+        document_id,
+        peguy_documents!inner (
+          title
+        )
+      `,
+      )
+      .limit(500);  // ← Aumentato a 500 per coprire più testi
 
-    // Ricerca vettoriale
-    const { data: chunks, error } = await supabase.rpc('match_chunks', {
-      query_embedding: questionEmbedding,
-      match_threshold: 0.2,
-      match_count: 20
-    });
+    console.log("📊 Chunks caricati:", chunks?.length || 0);
 
-    console.log("📊 Chunks trovati:", chunks?.length || 0);
-
-    if (error) {
-      console.error("❌ Errore ricerca:", error);
-      return res.json({ 
-        answer: "Si è verificato un errore nella ricerca. Riprova." 
-      });
+    if (error || !chunks || chunks.length === 0) {
+      return res.json({ answer: "Nessun documento trovato nel database." });
     }
 
-    if (!chunks || chunks.length === 0) {
-      return res.json({ 
-        answer: "Non ho trovato informazioni rilevanti nei testi di Péguy per questa domanda." 
-      });
-    }
-
-    // Prepara il contesto per Claude
+    // Prepara il contesto
     const context = chunks
-      .map((c, i) => 
-        `[${i + 1}] Da "${c.title}":\n${c.chunk_text}`
+      .map(
+        (c, i) =>
+          `[${i + 1}] "${c.peguy_documents.title}":\n${c.chunk_text}`,
       )
       .join("\n\n");
 
-    console.log("🤖 Chiamo Claude...");
+    console.log("🤖 Chiamo Claude con", chunks.length, "chunks...");
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -89,13 +57,13 @@ app.post("/api/chat", async (req, res) => {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 2048,
+        max_tokens: 3000,  // ← Aumentato per risposte più complete
         system:
-          "Sei un esperto di Charles Péguy. Rispondi SOLO a domande sui suoi testi e opere. Se la domanda non riguarda Péguy, rispondi gentilmente: 'Mi dispiace, posso rispondere solo a domande su Charles Péguy e le sue opere.' Quando citi passaggi dai testi, usa il formato blockquote Markdown (> prima della citazione) per le citazioni esatte. Non inventare mai citazioni.",
+          "Sei un esperto di Charles Péguy. Rispondi SOLO a domande sui suoi testi e opere. Se la domanda non riguarda Péguy, rispondi gentilmente: 'Mi dispiace, posso rispondere solo a domande su Charles Péguy e le sue opere.' Quando citi passaggi dai testi, usa il formato blockquote Markdown (> prima della citazione) per le citazioni esatte. Sei molto bravo a trovare informazioni rilevanti anche in grandi quantità di testo. Cerca attentamente in tutti i passaggi forniti prima di dire che non trovi qualcosa.",
         messages: [
           {
             role: "user",
-            content: `Testi rilevanti da Péguy:\n\n${context}\n\nDomanda: ${question}\n\nRispondi basandoti SOLO sui testi forniti sopra. Se l'informazione non è presente, dillo chiaramente.`,
+            content: `Ecco TUTTI i testi disponibili di Péguy:\n\n${context}\n\n---\n\nDomanda dell'utente: ${question}\n\nCerca attentamente nei testi sopra e rispondi. Se trovi informazioni rilevanti, citale usando il blockquote (>). Se proprio non trovi nulla di pertinente dopo aver cercato bene, dillo chiaramente.`,
           },
         ],
       }),
@@ -104,12 +72,13 @@ app.post("/api/chat", async (req, res) => {
     const data = await response.json();
 
     if (data.error) {
-      return res.json({ answer: "Errore: " + data.error.message });
+      console.error("❌ Errore Claude:", data.error);
+      return res.json({ answer: "Errore nell'API di Claude: " + data.error.message });
     }
 
     res.json({ answer: data.content[0].text });
   } catch (error) {
-    console.error("❌ Errore:", error);
+    console.error("❌ Errore server:", error);
     res.status(500).json({ error: error.message });
   }
 });
