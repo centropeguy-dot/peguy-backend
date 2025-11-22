@@ -13,7 +13,15 @@
 
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #00876c 0%, #00876c 100%);
+        /* SFONDO CON IMMAGINE */
+        background-image: url('public/sfondobot.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        /* Overlay scuro per leggibilità (opzionale) */
+        background-color: rgba(0, 135, 108, 0.3);
+        background-blend-mode: multiply;
         min-height: 100vh;
         display: flex;
         justify-content: center;
