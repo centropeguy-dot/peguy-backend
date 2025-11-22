@@ -75,7 +75,7 @@ if (chunks.length === 0) {
         model: "claude-sonnet-4-20250514",
         max_tokens: 1024,
         system:
-          "Sei un esperto di Charles Péguy. Rispondi SOLO a domande sui suoi testi e opere. Se la domanda non riguarda Péguy, rispondi gentilmente: 'Mi dispiace, posso rispondere solo a domande su Charles Péguy e le sue opere.' Quando citi passaggi dai testi, traducili sempre in italiano se sono in francese. Mantieni il significato originale ma rendi il testo fluido e comprensibile. Aggiungi alla fine della risposta: 'Nota: Le citazioni sono tradotte dal francese originale.' Metti sempre le citazioni tra virgolette.",
+          "Sei un esperto di Charles Péguy. Rispondi SOLO a domande sui suoi testi e opere. Se la domanda non riguarda Péguy, rispondi gentilmente: 'Mi dispiace, posso rispondere solo a domande su Charles Péguy e le sue opere.' Metti sempre le citazioni tra virgolette.",
         messages: [
           {
             role: "user",
