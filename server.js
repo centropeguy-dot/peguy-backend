@@ -8,35 +8,34 @@ app.use(express.static("."));
 const CLAUDE_KEY = process.env.CLAUDE_KEY; 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
-const COHERE_API_KEY = process.env.COHERE_API_KEY;  // ← Nuova variabile
+const VOYAGE_API_KEY = process.env.VOYAGE_API_KEY;  // ← Voyage AI
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Genera embedding con Cohere
+// Genera embedding con Voyage AI
 async function generateEmbedding(text) {
-  const response = await fetch("https://api.cohere.ai/v1/embed", {
+  const response = await fetch("https://api.voyageai.com/v1/embeddings", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${COHERE_API_KEY}`,
+      Authorization: `Bearer ${VOYAGE_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      texts: [text],
-      model: "embed-multilingual-v3.0",
-      input_type: "search_query",  // ← Per query, non documenti
-      truncate: "END",
+      input: text,
+      model: "voyage-multilingual-2",  // Modello multilingua per FR/IT
     }),
   });
 
   const data = await response.json();
   
-  if (data.message || !data.embeddings) {
-    console.error("❌ Errore Cohere:", data);
-    throw new Error(data.message || "Errore embedding");
+  if (data.error || !data.data) {
+    console.error("❌ Errore Voyage:", data);
+    throw new Error(data.error?.message || "Errore embedding");
   }
   
-  const embedding = data.embeddings[0];
-  // Padda a 1536 dimensioni come nel database
+  const embedding = data.data[0].embedding;
+  
+  // Voyage restituisce 1024 dimensioni, padda a 1536
   return [...embedding, ...Array(1536 - embedding.length).fill(0)];
 }
 
@@ -47,14 +46,14 @@ app.post("/api/chat", async (req, res) => {
     console.log("🔍 Domanda:", question);
 
     // Genera embedding della domanda
-    console.log("⚙️ Generazione embedding...");
+    console.log("⚙️ Generazione embedding con Voyage...");
     const questionEmbedding = await generateEmbedding(question);
 
-    // Ricerca vettoriale con la funzione SQL
+    // Ricerca vettoriale
     const { data: chunks, error } = await supabase.rpc('match_chunks', {
       query_embedding: questionEmbedding,
-      match_threshold: 0.2,  // Soglia più bassa per trovare più risultati
-      match_count: 20        // Top 20 chunks più rilevanti
+      match_threshold: 0.2,
+      match_count: 20
     });
 
     console.log("📊 Chunks trovati:", chunks?.length || 0);
