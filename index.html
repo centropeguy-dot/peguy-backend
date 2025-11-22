@@ -303,10 +303,11 @@
       function addMessage(role, content) {
         const msgDiv = document.createElement("div");
         msgDiv.className = `message ${role}`;
-        msgDiv.innerHTML = `
-        <div class="message-avatar">${role === "user" ? "👤" : "📖"}</div>
-        <div class="message-content">${content}</div>
-      `;
+        const formattedContent = role === "assistant" ? marked.parse(content) : content;
+msgDiv.innerHTML = `
+  <div class="message-avatar">${role === "user" ? "👤" : "📖"}</div>
+  <div class="message-content">${formattedContent}</div>
+`;
         messagesDiv.insertBefore(msgDiv, typing);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
       }
