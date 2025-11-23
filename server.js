@@ -62,7 +62,7 @@ app.post("/api/chat", async (req, res) => {
         messages: [
           {
             role: "user",
-            content: `Ecco TUTTI i testi disponibili di Péguy:\n\n${context}\n\n---\n\nDomanda dell'utente: ${question}\n\nCerca attentamente nei testi sopra e rispondi. Se trovi informazioni rilevanti, citale usando il blockquote (>). Se proprio non trovi nulla di pertinente dopo aver cercato bene, dillo chiaramente.`,
+           content: `Testi rilevanti da Péguy:\n\n${context}\n\nDomanda: ${question}\n\nRispondi basandoti SOLO sui testi forniti sopra. Se l'informazione non è presente, dillo chiaramente.`,
           },
         ],
       }),
