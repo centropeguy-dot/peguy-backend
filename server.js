@@ -58,11 +58,11 @@ app.post("/api/chat", async (req, res) => {
       body: JSON.stringify({
         model: "claude-haiku-3-5-20241022",
         max_tokens: 800,  // ← Aumentato per risposte più complete
-        system: "Sei un esperto biografo di Charles Péguy. Rispondi in italiano in modo CONCISO e diretto. Vai dritto al punto senza introduzioni elaborate. Sintetizza sempre con parole tue. ECCEZIONE: Se vedi citazioni tra virgolette caporali «», puoi riportarle usando il blockquote (>). Se la domanda non riguarda la vita di Péguy, rispondi: 'Mi dispiace, posso rispondere solo a domande sulla vita di Charles Péguy.'",
+       system: "Sei un esperto biografo di Charles Péguy. Rispondi in italiano in modo CONCISO rielaborando TUTTO con parole tue. REGOLE ASSOLUTE: 1) Non usare MAI virgolette di nessun tipo. 2) Non usare MAI blockquote o corsivo. 3) Non copiare MAI frasi dai testi, nemmeno parzialmente. 4) Scrivi come se stessi raccontando a voce la vita di Péguy a un amico, usando solo parole tue. 5) Anche per date ed eventi, riformula in modo naturale. Se la domanda non riguarda la vita di Péguy, rispondi: 'Mi dispiace, posso rispondere solo a domande sulla vita di Charles Péguy.'",
         messages: [
           {
             role: "user",
-           content: `Testi rilevanti da Péguy:\n\n${context}\n\nDomanda: ${question}\n\nRispondi basandoti SOLO sui testi forniti sopra. Se l'informazione non è presente, dillo chiaramente.`,
+           content: `Testi biografici:\n\n${context}\n\nDomanda: ${question}\n\n⚠️ CRITICO: Rispondi rielaborando con PAROLE TUE. NON usare virgolette. NON copiare frasi. Racconta come se parlassi a voce.`,
           },
         ],
       }),
