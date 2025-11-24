@@ -30,7 +30,7 @@ app.post("/api/chat", async (req, res) => {
         )
       `,
       )
-      .limit(500);  // ← Aumentato a 500 per coprire più testi
+      .limit(150);  // ← Aumentato a 500 per coprire più testi
 
     console.log("📊 Chunks caricati:", chunks?.length || 0);
 
@@ -57,8 +57,7 @@ app.post("/api/chat", async (req, res) => {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 3000,  // ← Aumentato per risposte più complete
-     system: "Sei un esperto biografo di Charles Péguy. Rispondi in italiano a domande sulla vita, la personalità e il contesto storico di Péguy. REGOLA FONDAMENTALE: Non usare MAI blockquote (>). Non riportare MAI brani letterali dai testi. Rispondi SEMPRE rielaborando le informazioni con parole tue, in modo narrativo e fluido. Se la domanda non riguarda la vita di Péguy, rispondi gentilmente: 'Mi dispiace, posso rispondere solo a domande sulla vita di Charles Péguy.'",
+        max_tokens: 3000,  // ← Aumentato per risposte più completesystem: "Sei un esperto biografo di Charles Péguy. Rispondi in italiano sintetizzando le informazioni con parole tue. NON copiare mai brani dai testi. ECCEZIONE: Se vedi citazioni tra virgolette caporali «», puoi riportarle usando il blockquote (>). Tutto il resto deve essere rielaborato. Se la domanda non riguarda la vita di Péguy, rispondi: 'Mi dispiace, posso rispondere solo a domande sulla vita di Charles Péguy.'",
         messages: [
           {
             role: "user",
